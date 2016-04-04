@@ -14,34 +14,48 @@ const bodyParser = require('body-parser')
 const primus = require('feathers-primus')
 const middleware = require('./middleware')
 const services = require('./services')
-const twitterAuth = require('./twitter-auth')
-
+const cookieParser = require('cookie-parser')
+const hbs = require('express-handlebars')
 
 const app = feathers()
 
 app.configure(configuration(path.join(__dirname, '..')))
+app.engine('hbs', hbs({
+  helpers: {
+    json: function (context) {
+      return JSON.stringify(context)                
+    }
+  }
+}))
+app.set('view engine', 'hbs')
+app.set('views', __dirname + '/../views')
 
 app.use(compress())
 .options('*', cors())
 .use(cors())
 .use(favicon( path.join(app.get('public'), 'favicon.ico') ))
-.use('/', serveStatic( app.get('public') ))
+.use(cookieParser())
 .use(bodyParser.json())
 .use(bodyParser.urlencoded({ extended: true }))
 .configure(hooks())
 .configure(rest())
 //.configure(primus({ transformer: 'websockets' }))
 .configure(services)
-.configure(middleware)
-
-
-var twAuth = app.service('auth/twitter')
-
-
-app.get('/auth/twitter', function (req, res, next) {
-  console.log('req')
-  res.send('test')
+.use('/', function (req, res, next) {
+  if (req.url === '/' && req.session.userId) {
+    const userService = app.service('/users')
+    userService.get(req.session.userId)
+      .then(user => {
+        console.log('user', user)   
+        res.render('index', { data: JSON.stringify({ loggedIn: true, user: user }) })
+        //next()
+      })
+  } else {
+    next()
+  }
 })
+.use('/', serveStatic( app.get('public') ))
+.configure(middleware)
 
 
 module.exports = app

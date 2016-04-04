@@ -26,9 +26,6 @@ module.exports = function(options) {
     options.callbackURL = options.callbackURL || (options.endPoint + '/' + options.callbackSuffix);
     var authOptions = Object.assign({ session: false, state: true }, options.permissions);
 
-//    console.log('app', options)
-
-
     app
     .use(cookieParser())
     .use(session({
@@ -40,6 +37,8 @@ module.exports = function(options) {
     .use(passport.session())
     .use(options.endPoint, exposeConnectMiddleware, {
       oauthCallback: function(req, accessToken, accessTokenSecret, profile, callback) {
+      //  console.log(accessToken, accessTokenSecret, profile)
+        
         app.service(options.userEndpoint)
         .find({
           internal: true,
@@ -48,6 +47,7 @@ module.exports = function(options) {
         .then(function(users) {
           var user = users[0] || users.data && users.data[0]
 
+          console.log(user._id)
           if (user) {
             return user
           }
@@ -88,6 +88,14 @@ module.exports = function(options) {
             .catch(reject)
           })(params.req, params.res)
         })
+      },
+
+      after: {
+        get: function (hook) {
+          hook.params.req.session.twitterId = hook.result.data.twitterId
+          hook.params.req.session.userId = hook.result.data._id
+          console.log('session in twitterAut', hook.params.req.session)
+        }
       }
     }, successfulLogin(options))
 

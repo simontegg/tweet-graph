@@ -1,4 +1,5 @@
 import finalCreateStore from './store'
+import { getLogin } from './action-creators'
 
 const sheetRouter = require('sheet-router')
 
@@ -9,7 +10,7 @@ const initialState = {
 
 const store = finalCreateStore(initialState)
 
-
+//store.dispatch(getLogin())
 
 const base = function (content) {
   return function (params, yo, state) {
@@ -24,7 +25,7 @@ const base = function (content) {
 const router = sheetRouter(function (route) {
   return [
     route('/login', (params, yo, props) => {
-      return base(signIn(props))(params, yo, props)
+      return base(signIn)(params, yo, props)
     })
   ]
 })
@@ -33,17 +34,10 @@ const router = sheetRouter(function (route) {
 
 const yo = require('yo-yo')
 
-function signIn (props) {
-  return function () {
-    function handleClick () {
-      const state = props.store.getState()
-      console.log('clicked', state)    
-    }
-
-    return yo`<img 
-      onclick=${handleClick} 
-      src="images/sign-in-with-twitter.png" />`
-  }
+function signIn () {
+  return yo`<a href='/auth/twitter' >
+    <img src="images/sign-in-with-twitter.png" />
+  </a>`
 }
 
 

@@ -13,8 +13,9 @@ module.exports = function() {
     idField:              '_id',
     setUpSuccessRedirect: false,
     setUpFailureRedirect: false,
-    successRedirect:      false,
-    failureRedirect:      false
+    successRedirect:      '/',
+    failureRedirect:      false,
+    httpOnly:             true
   }))
 
   app.configure(twitterAuth({
