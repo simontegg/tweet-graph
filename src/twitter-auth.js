@@ -6,6 +6,7 @@ var session                 = require('express-session')
 var successfulLogin         = require('feathers-authentication/lib/middleware').successfulLogin
 var LevelStore              = require('level-session-store')(session)
 var Strategy                = require('passport-twitter').Strategy
+var User                    = require('./services/user/model')
 require('dotenv').load()
 
 // TODO This file will be obsolete with resolution of https://github.com/feathersjs/feathers-authentication/issues/42
@@ -47,16 +48,15 @@ module.exports = function(options) {
         .then(function(users) {
           var user = users[0] || users.data && users.data[0]
 
-          console.log(user._id)
           if (user) {
             return user
           }
 
-          return app.service(options.userEndpoint).create(
-            {
+          return app.service(options.userEndpoint)
+            .create(User({
               twitterId: profile.id,
               twitter:   Object.assign({ accessToken: accessToken, accessTokenSecret: accessTokenSecret }, profile._json)
-            },
+            }),
             { internal: true }
           )
         })
@@ -94,7 +94,6 @@ module.exports = function(options) {
         get: function (hook) {
           hook.params.req.session.twitterId = hook.result.data.twitterId
           hook.params.req.session.userId = hook.result.data._id
-          console.log('session in twitterAut', hook.params.req.session)
         }
       }
     }, successfulLogin(options))

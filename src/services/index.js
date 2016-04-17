@@ -1,8 +1,12 @@
 'use strict'
 require('dotenv').load()
+const relationship = require('./relationship')
 const authentication = require('feathers-authentication')
 const user = require('./user');
 const twitterAuth = require('../twitter-auth')
+
+
+
 module.exports = function() {
   const app = this;
 
@@ -24,4 +28,5 @@ module.exports = function() {
     userEndpoint: '/users'
   }))
   app.configure(user);
+  app.configure(relationship);
 }

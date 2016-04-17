@@ -46,10 +46,14 @@ app.use(compress())
     const userService = app.service('/users')
     userService.get(req.session.userId)
       .then(user => {
-        console.log('user', user)   
-        res.render('index', { data: JSON.stringify({ loggedIn: true, user: user }) })
-        //next()
+        res.render('index', { 
+          state: JSON.stringify({ 
+            loggedIn: true, 
+            user: user 
+          }) 
+        })
       })
+      .catch(err => { console.log(err) })
   } else {
     next()
   }
